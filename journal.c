@@ -3,23 +3,34 @@
 #include <string.h>
 #include <time.h>
 
+//These are variable used by multiple methods, therefore they are out here.
 char userName[50];
 char printUser[50];
+//welcome method wasn't able to see these methods unless initilazed here.
 void creatingEntry();
 void readingEntry();
 
+//Method that prints the menu
 int printList(char **list, int count){
 
+	//highlight used to tell printer which one to highlight
+	//choice is carried out of the menu to determine next steps
+	//c is where the keypad return is stored
         int highlight = 1;
         int choice = 0;
         int c;
 
+	//ncurses intializing the standard window
         initscr();
+	//this allows the use of arrows
         keypad(stdscr, TRUE);
+	//setting cursor to invisible because it is not needed in this part
         curs_set(0);
 	
+	//keeps the username at the top
 	mvprintw(8, 10, "Username: %s", printUser);
-
+	
+	//initial print before input is received to update
         for(int i = 0; i < count; i++){
                 if(highlight == i + 1){
                         attron(A_REVERSE);
@@ -30,13 +41,17 @@ int printList(char **list, int count){
                 }
         }
         refresh();
-
+	
+	//while loop continues until enter is pressed
         while(1){
 
+		//gets keypress
                 c = getch();
 
+		//determines what to do based on which arrow key was pressed
                 switch(c){
-                        case KEY_UP:
+			case KEY_UP:
+				//this loops the highlighted item from the top to bottom if up is pressed again
                                 if(highlight == 1){
                                         highlight = count;
                                 }else{
@@ -44,6 +59,7 @@ int printList(char **list, int count){
                                 }
                                 break;
                         case KEY_DOWN:
+				//this loops from bottom to top if option is the last and user presses down again 
                                 if(highlight == count){
                                         highlight = 1;
                                 }else{
@@ -51,9 +67,11 @@ int printList(char **list, int count){
                                 }
                                 break;
                         case 10:
+				//when user presses enter choice to set to something other than zero so loop breaks
                                 choice = highlight;
                                 break;
                 }
+		//prints everytime arrow key is pressed
                 for(int i = 0; i < count; i++){
                         if(highlight == i + 1){
                                 attron(A_REVERSE);
@@ -65,6 +83,7 @@ int printList(char **list, int count){
                 }
                 refresh();
 
+		//break out of the loop when enter is pressed
 		if(choice != 0){
                         break;
                 }
@@ -76,6 +95,7 @@ int printList(char **list, int count){
         return choice;
 }
 
+//this method was created so that after creatingEntry or readingEntry method is over than user returns to main menu to choose to continue or exit
 void welcome(){
 
         erase();
@@ -101,17 +121,21 @@ void welcome(){
 
 void readingEntry(){
 	
+	//This array hold each line from the file
 	char dataArray[500][500];
 
+	//opening file
 	FILE *fp;
 	fp = fopen(userName, "r");
 	
 	int count = 0;
 
+	//file is read into dataArray
 	while(fgets(dataArray[count], 500, fp) != NULL){
 		++count;
 	}
 	
+	//same as from the printList method
 	int highlight = 1;
 	int choice = 0;
 	int c;
@@ -122,6 +146,7 @@ void readingEntry(){
 	char readList[100][100];
 	int j = 0;
 
+	//initial print before user input
 	for (int i = 0; i < count; i+=3){
 		strcpy(readList[j], dataArray[i]);
 		strcat(readList[j], "\t  ");
@@ -181,6 +206,8 @@ void readingEntry(){
                 }
         }
 	erase();
+	
+	//based on what the user chose, that entry is displayed on the screen
 	mvprintw(8, 10, "Username: %s", printUser);
         mvprintw(10, 10, "Entry Title : %s", dataArray[((choice-1) * 3)]);
 	mvprintw(12, 10, dataArray[((choice-1) * 3) + 1]);
@@ -192,6 +219,7 @@ void readingEntry(){
 }
 void creatingEntry(){
 
+	//these hold the title and entry entered by the user until they are place into the txt file of that username.
         char title[50];
 	char entry[500];
 	
@@ -210,6 +238,7 @@ void creatingEntry(){
         FILE * fp;
         fp = fopen(userName, "a");
 
+	//printing into file
         fprintf(fp, title);
         fprintf(fp, "\n");
         fprintf(fp, entry);
@@ -222,6 +251,7 @@ void creatingEntry(){
         t = time(NULL);
         ptm = localtime(&t);
 
+	//time is formatted and placed on the third line of each entry section
         strftime(cur_time, 128, "%d-%b-%Y %H:%M", ptm);
         fprintf(fp, cur_time);
         fprintf(fp, "\n");
@@ -234,9 +264,12 @@ int main(){
 
 	initscr();	
 	keypad(stdscr, TRUE);
-
-	mvprintw(10, 10, "Enter Username: ");	
+	
+	//this is the login screen
+	mvprintw(10, 10, "Enter Username: ");
+	//this takes the username and adds ".txt" so that that text file can be accessed
 	getstr(printUser);
+	//username saved in printUser to print userName at the top in other pages
 	strcpy(userName, printUser);
 
 	char txt[10] = ".txt";
@@ -245,3 +278,4 @@ int main(){
 	welcome();
 	return 0;
 }
+//END 
